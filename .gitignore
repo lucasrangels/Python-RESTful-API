@@ -1,0 +1,11 @@
+__pycache__
+.vscode
+.tags
+venv
+parameters.xml
+.idea
+*.pyc
+*.spec
+common.env
+/.project
+migrations
