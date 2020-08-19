@@ -9,3 +9,4 @@ parameters.xml
 common.env
 /.project
 migrations
+.env

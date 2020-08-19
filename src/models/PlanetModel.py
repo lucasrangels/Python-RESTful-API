@@ -60,6 +60,13 @@ class PlanetModel(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+    def cleanDB(self):
+        """
+        Método para excluir todas entradas no banco de dados.
+        """
+        db.session.query(PlanetModel).delete()
+        db.session.commit()
+
 
     @staticmethod
     def getAllPlanets():

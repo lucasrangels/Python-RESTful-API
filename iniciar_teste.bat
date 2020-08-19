@@ -29,6 +29,10 @@
   @python manage.py db init && @python manage.py db migrate && @python manage.py db upgrade
 )
 
-@ECHO ##### Iniciando Servico #####
+@ECHO ##### Iniciando Testes #####
 
-@python run.py
+@python test.py
+
+@CALL "%CD%\venv\Scripts\"deactivate.bat
+
+@ECHO ##### Testes Concluidos #####

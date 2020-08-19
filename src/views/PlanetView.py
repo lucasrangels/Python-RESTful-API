@@ -12,20 +12,38 @@ def create():
     """
 
     req_data = request.get_json()
-    data = planet_schema.load(req_data)
 
-    hasPlanet = PlanetModel.getPlanetbyName(data.get('nome'))
-    if hasPlanet is not None:
-        message = {'Erro': 'Planeta inserido já está cadastrado'}
-        return custom_response(message, 400)
+    if type(req_data) == list:
+        for item in req_data:
+            data = planet_schema.load(item)
+            hasPlanet = PlanetModel.getPlanetbyName(data.get('nome'))
 
-    planet = PlanetModel(data)
-    response = planet.save()
+            if hasPlanet is not None:
+                message = {'Erro': 'Planeta inserido já está cadastrado'}
+                return custom_response(message, 403)
 
-    if response:
-        message = {'Mensagem': 'Planeta cadastrado com sucesso!'}
+
+            planet = PlanetModel(data)
+            response = planet.save()
+            if not response:
+                return custom_response({
+                    'Erro': "Planeta inexistente no universo de Star Wars. Consulte o link a seguir para mais informações sobre os planetas existentes: 'https://pt.qwe.wiki/wiki/List_of_Star_Wars_planets_and_moons'"}, 400)
     else:
-        message = {'Erro': "Planeta inexistente no universo de Star Wars. Consulte o link a seguir para mais informações sobre os planetas existentes: 'https://pt.qwe.wiki/wiki/List_of_Star_Wars_planets_and_moons'"}
+        data = planet_schema.load(req_data)
+
+        hasPlanet = PlanetModel.getPlanetbyName(data.get('nome'))
+        if hasPlanet is not None:
+            message = {'Erro': 'Planeta inserido já está cadastrado'}
+            return custom_response(message, 403)
+
+        planet = PlanetModel(data)
+        response = planet.save()
+
+        if not response:
+            return custom_response({
+                'Erro': "Planeta inexistente no universo de Star Wars. Consulte o link a seguir para mais informações sobre os planetas existentes: 'https://pt.qwe.wiki/wiki/List_of_Star_Wars_planets_and_moons'"},404)
+
+    message = {'Mensagem': 'Planetas cadastrado com sucesso!'}
 
     return custom_response(message, 201)
 
@@ -59,7 +77,10 @@ def get_all():
     planets = PlanetModel.getAllPlanets()
     ser_planets = planet_schema.dump(planets, many=True)
 
-    return custom_response(ser_planets, 200)
+    if ser_planets == []:
+        return custom_response("{'Mensagem': 'Não há planetas cadastrados.'}", 204)
+    else:
+        return custom_response(ser_planets, 200)
 
 
 @planet_api.route('/<string:nome>', methods=['GET'])
@@ -97,18 +118,39 @@ def delete():
   Método para exclusão de planetas cadastrados no banco de dados
   """
   req_data = request.get_json()
-  data = planet_schema.load(req_data)
 
-  planet = PlanetModel.getPlanetbyName(data.get('nome'))
+  if type(req_data) == list:
+    for item in req_data:
+        data = planet_schema.load(item)
+        planet = PlanetModel.getPlanetbyName(data.get('nome'))
+        if planet is None:
+            message = {'Erro': 'Não foi possível excluir o planeta pois o mesmo não está cadastrado.'}
+            return custom_response(message, 400)
+        planet.delete()
+  else:
+      data = planet_schema.load(req_data)
 
-  if planet is None:
-      message = {'Erro': 'Não foi possível excluir o planeta pois o mesmo não está cadastrado.'}
-      return custom_response(message, 400)
+      planet = PlanetModel.getPlanetbyName(data.get('nome'))
 
-  planet.delete()
-  message = {'Mensagem': 'Planeta excluído com sucesso!'}
+      if planet is None:
+          message = {'Erro': 'Não foi possível excluir o planeta pois o mesmo não está cadastrado.'}
+          return custom_response(message, 400)
+
+      planet.delete()
+
+  message = {'Mensagem': 'Planeta(s) excluído(s) com sucesso!'}
 
   return custom_response(message, 201)
+
+@planet_api.route('/delete/all', methods=['DELETE'])
+def deleteAll():
+  """
+  Método debug para exclusão
+  """
+  planet = PlanetModel({})
+  planet.cleanDB()
+
+  return custom_response({"Debug": "Limpeza de DB concluída"}, 201)
 
 
 def custom_response(res, status_code):
