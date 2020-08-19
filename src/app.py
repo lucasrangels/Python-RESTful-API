@@ -16,7 +16,6 @@ def create_app(env_name):
 
     db.init_app(app)
 
-    ## URL da API
     app.register_blueprint(planet_blueprint, url_prefix='/api/v1/planetas')
 
     @app.route('/', methods=['GET'])

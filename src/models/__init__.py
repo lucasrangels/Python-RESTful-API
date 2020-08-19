@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from src.controller.request import RequestController
+from src.services.request import RequestController
 
 db = SQLAlchemy()
 Request = RequestController()

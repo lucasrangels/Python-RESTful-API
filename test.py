@@ -1,5 +1,6 @@
 import unittest
 import json
+from http import HTTPStatus
 from flask_testing import TestCase
 from src.app import create_app
 
@@ -13,7 +14,7 @@ class BaseTest(TestCase):
     def testGetAllPlanets(self):
         self.client.delete("/api/v1/planetas/delete/all")
         response = self.client.get("/api/v1/planetas/")
-        self.assertStatus(response, 204, message="Database não está vazio.")
+        self.assertStatus(response, HTTPStatus.NO_CONTENT, message="Database não está vazio.")
 
     def testPostPlanet(self):
         self.client.delete("/api/v1/planetas/delete/all")
@@ -29,7 +30,7 @@ class BaseTest(TestCase):
 
         for item in data:
             response = self.client.post("/api/v1/planetas/", json=item)
-            self.assertStatus(response, 201, message="Cadastro de planetas falhou.")
+            self.assertStatus(response, HTTPStatus.CREATED, message="Cadastro de planetas falhou.")
 
     def testPutPlanet(self):
         data = {
@@ -38,7 +39,7 @@ class BaseTest(TestCase):
             "terreno": "Montanha"
         }
         response = self.client.put("/api/v1/planetas/", json=data)
-        self.assertStatus(response, 200, message="Atualização do cadastro de planetas falhou.")
+        self.assertStatus(response, HTTPStatus.ACCEPTED, message="Atualização do cadastro de planetas falhou.")
 
     def testPutPlanetInvalid(self):
         data = {
@@ -47,7 +48,7 @@ class BaseTest(TestCase):
             "terreno": "Montanha"
         }
         response = self.client.put("/api/v1/planetas/", json=data)
-        self.assertStatus(response, 400, message="Atualização de planeta com nome inválido falhou.")
+        self.assertStatus(response, HTTPStatus.NO_CONTENT, message="Atualização de planeta com nome inválido falhou.")
 
     def testDeletePlanet(self):
         data = {
@@ -56,7 +57,7 @@ class BaseTest(TestCase):
             "terreno": "Deserto"
         }
         response = self.client.delete("/api/v1/planetas/", json=data)
-        self.assertStatus(response, 201, message="Exclusão de planeta falhou.")
+        self.assertStatus(response, HTTPStatus.ACCEPTED, message="Exclusão de planeta falhou.")
 
     def testDeleteInvalid(self):
         data = {
@@ -65,7 +66,7 @@ class BaseTest(TestCase):
             "terreno": "TESTE"
         }
         response = self.client.delete("/api/v1/planetas/", json=data)
-        self.assertStatus(response, 400, message="Exclusão de planeta falhou.")
+        self.assertStatus(response, HTTPStatus.NO_CONTENT, message="Exclusão de planeta com nome inválido falhou.")
 
     def testDuplicateRow(self):
         data = {
@@ -75,7 +76,7 @@ class BaseTest(TestCase):
         }
         self.client.post("/api/v1/planetas/", json=data)
         response = self.client.post("/api/v1/planetas/", json=data)
-        self.assertStatus(response, 403, message="Checar duplicidade no cadastro falhou.")
+        self.assertStatus(response, HTTPStatus.CONFLICT, message="Checar duplicidade no cadastro falhou.")
 
     def testGetbyName(self):
         data = {
@@ -85,11 +86,11 @@ class BaseTest(TestCase):
         }
         self.client.post("/api/v1/planetas/", json=data)
         response = self.client.get("/api/v1/planetas/Tatooine")
-        self.assertStatus(response, 200, message="Busca de planetas por nome falhou.")
+        self.assertStatus(response, HTTPStatus.OK, message="Busca de planetas por nome falhou.")
 
     def testGetbyNameInvalid(self):
         response = self.client.get("/api/v1/planetas/Planeta")
-        self.assertStatus(response, 404, message="Busca de planeta com nome inválido falhou.")
+        self.assertStatus(response, HTTPStatus.NO_CONTENT, message="Busca de planeta com nome inválido falhou.")
 
     def testGetbyID(self):
         data = {
@@ -102,11 +103,11 @@ class BaseTest(TestCase):
         data = (id.data).decode("utf-8")
         planet = json.loads(data)
         response = self.client.get(f"/api/v1/planetas/{planet['id']}")
-        self.assertStatus(response, 200, message="Busca de planetas por nome falhou.")
+        self.assertStatus(response, HTTPStatus.OK, message="Busca de planetas por nome falhou.")
 
     def testGetbyIDInvalid(self):
         response = self.client.get("/api/v1/planetas/99999")
-        self.assertStatus(response, 404, message="Busca de planeta com ID inválido falhou.")
+        self.assertStatus(response, HTTPStatus.NO_CONTENT, message="Busca de planeta com ID inválido falhou.")
 
 def suite():
 
