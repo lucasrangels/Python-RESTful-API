@@ -1,5 +1,6 @@
 from flask import request, json, Response, Blueprint
 from ..models.PlanetModel import PlanetModel, PlanetSchema
+from http import HTTPStatus
 
 planet_api = Blueprint('planet_api', __name__)
 planet_schema = PlanetSchema()
@@ -20,32 +21,32 @@ def create():
 
             if hasPlanet is not None:
                 message = {'Erro': 'Planeta inserido já está cadastrado'}
-                return custom_response(message, 403)
+                return custom_response(message, HTTPStatus.CONFLICT)
 
 
             planet = PlanetModel(data)
             response = planet.save()
             if not response:
                 return custom_response({
-                    'Erro': "Planeta inexistente no universo de Star Wars. Consulte o link a seguir para mais informações sobre os planetas existentes: 'https://pt.qwe.wiki/wiki/List_of_Star_Wars_planets_and_moons'"}, 400)
+                    'Erro': "Planeta inexistente no universo de Star Wars. Consulte o link a seguir para mais informações sobre os planetas existentes: 'https://pt.qwe.wiki/wiki/List_of_Star_Wars_planets_and_moons'"}, HTTPStatus.CONFLICT)
     else:
         data = planet_schema.load(req_data)
 
         hasPlanet = PlanetModel.getPlanetbyName(data.get('nome'))
         if hasPlanet is not None:
             message = {'Erro': 'Planeta inserido já está cadastrado'}
-            return custom_response(message, 403)
+            return custom_response(message, HTTPStatus.CONFLICT)
 
         planet = PlanetModel(data)
         response = planet.save()
 
         if not response:
             return custom_response({
-                'Erro': "Planeta inexistente no universo de Star Wars. Consulte o link a seguir para mais informações sobre os planetas existentes: 'https://pt.qwe.wiki/wiki/List_of_Star_Wars_planets_and_moons'"},404)
+                'Erro': "Planeta inexistente no universo de Star Wars. Consulte o link a seguir para mais informações sobre os planetas existentes: 'https://pt.qwe.wiki/wiki/List_of_Star_Wars_planets_and_moons'"}, HTTPStatus.CONFLICT)
 
     message = {'Mensagem': 'Planetas cadastrado com sucesso!'}
 
-    return custom_response(message, 201)
+    return custom_response(message, HTTPStatus.CREATED)
 
 
 @planet_api.route('/', methods=['PUT'])
@@ -60,12 +61,12 @@ def update():
     planet = PlanetModel.getPlanetbyName(data.get('nome'))
     if planet is None:
         message = {'Erro': 'Não foi possível atualizar informações do planeta pois o mesmo não está cadastrado.'}
-        return custom_response(message, 400)
+        return custom_response(message, HTTPStatus.NO_CONTENT)
 
     planet.update(data)
     ser_planet = planet_schema.dump(planet)
 
-    return custom_response(ser_planet, 200)
+    return custom_response(ser_planet, HTTPStatus.ACCEPTED)
 
 
 @planet_api.route('/', methods=['GET'])
@@ -78,9 +79,9 @@ def get_all():
     ser_planets = planet_schema.dump(planets, many=True)
 
     if ser_planets == []:
-        return custom_response("{'Mensagem': 'Não há planetas cadastrados.'}", 204)
+        return custom_response("{'Mensagem': 'Não há planetas cadastrados.'}", HTTPStatus.NO_CONTENT)
     else:
-        return custom_response(ser_planets, 200)
+        return custom_response(ser_planets, HTTPStatus.OK)
 
 
 @planet_api.route('/<string:nome>', methods=['GET'])
@@ -90,12 +91,12 @@ def getByName(nome):
     """
     planet = PlanetModel.getPlanetbyName(nome)
     if planet is None:
-        return custom_response({'Erro': 'Planeta não encontrado a partir do nome informado!'}, 404)
+        return custom_response({'Erro': 'Planeta não encontrado a partir do nome informado!'}, HTTPStatus.NO_CONTENT)
 
 
     ser_planet = planet_schema.dump(planet)
 
-    return custom_response(ser_planet, 200)
+    return custom_response(ser_planet, HTTPStatus.OK)
 
 
 @planet_api.route('/<int:id>', methods=['GET'])
@@ -105,11 +106,11 @@ def getByID(id):
     """
     planet = PlanetModel.getPlanetbyID(id)
     if planet is None:
-        return custom_response({'Erro': 'Planeta não encontrado a partir do ID informado!'}, 404)
+        return custom_response({'Erro': 'Planeta não encontrado a partir do ID informado!'}, HTTPStatus.NO_CONTENT)
 
     ser_planet = planet_schema.dump(planet)
 
-    return custom_response(ser_planet, 200)
+    return custom_response(ser_planet, HTTPStatus.OK)
 
 
 @planet_api.route('/', methods=['DELETE'])
@@ -125,7 +126,7 @@ def delete():
         planet = PlanetModel.getPlanetbyName(data.get('nome'))
         if planet is None:
             message = {'Erro': 'Não foi possível excluir o planeta pois o mesmo não está cadastrado.'}
-            return custom_response(message, 400)
+            return custom_response(message, HTTPStatus.NO_CONTENT)
         planet.delete()
   else:
       data = planet_schema.load(req_data)
@@ -134,13 +135,13 @@ def delete():
 
       if planet is None:
           message = {'Erro': 'Não foi possível excluir o planeta pois o mesmo não está cadastrado.'}
-          return custom_response(message, 400)
+          return custom_response(message, HTTPStatus.NO_CONTENT)
 
       planet.delete()
 
   message = {'Mensagem': 'Planeta(s) excluído(s) com sucesso!'}
 
-  return custom_response(message, 201)
+  return custom_response(message, HTTPStatus.ACCEPTED)
 
 @planet_api.route('/delete/all', methods=['DELETE'])
 def deleteAll():
@@ -150,7 +151,7 @@ def deleteAll():
   planet = PlanetModel({})
   planet.cleanDB()
 
-  return custom_response({"Debug": "Limpeza de DB concluída"}, 201)
+  return custom_response({"Debug": "Limpeza de DB concluída"}, HTTPStatus.ACCEPTED)
 
 
 def custom_response(res, status_code):

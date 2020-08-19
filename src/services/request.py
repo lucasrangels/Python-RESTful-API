@@ -3,6 +3,7 @@
 
 import json
 import requests
+from http import HTTPStatus
 
 class RequestController():
     """
@@ -20,10 +21,10 @@ class RequestController():
 
             header = dict(entrada_json["header"])
 
-            x = requests.get(url, data=body, headers=header)
-            resultado = json.loads(x.text)
+            response = requests.get(url, data=body, headers=header)
+            resultado = json.loads(response.text)
 
-            if x.status_code == 200:
+            if response.status_code == HTTPStatus.OK:
                 if resultado["results"] != []:
                     retorno = resultado
                 else:
