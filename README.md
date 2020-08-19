@@ -39,6 +39,8 @@ $ createdb starwars_api_db
 O projeto conta com um arquivo batch dedicado para iniciar o serviço, não necessitando de instalação de dependências ou migrações de banco de forma manual.
 Inicie através do arquivo 'iniciar.bat' localizado na pasta raiz do projeto.
 
+# Teste Unitário
+A API possui uma rotina de testes em seu código, tendo sua execução a partir do arquivo 'iniciar_teste.bat'. Nos testes em questão são verificadas todas as operações do serviço, desde inclusão unitária ou múltipla de planetas, alteração e exclusão de cadastro, além de busca simples ou por ID e nome do planeta.
 
 # Exemplos de Uso
 
